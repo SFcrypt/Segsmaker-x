@@ -8,6 +8,7 @@ import logging
 import json
 import yaml
 import sys
+import os
 
 HOME = Path.home()
 SRC = HOME / '.gutris1'
@@ -47,14 +48,13 @@ def load_config():
     arg = config.get('launch_args')
     tunnell = config.get('tunnel')
     zrok_token.value = config.get('zrok_token', '')
-    ngrok_token.value = config.get('ngrok_token', '')
 
     if arg:
         launch_args.value = arg
     else:
         launch_args.value = get_args(ui)
 
-    if tunnell in ['Pinggy', 'ZROK', 'NGROK']:
+    if tunnell in ['Pinggy', 'ZROK']:
         tunnel.value = tunnell
     else:
         tunnel.value = 'Pinggy'
@@ -75,14 +75,13 @@ def load_config():
         'SDTrainer': 'SD Trainer'
     }
 
-    title.value = f"<div class='title'><h1>{ui_titles.get(ui, 'Unknown UI')}</h1></div>"
+    title.value = f"<div class='seg-title'>{ui_titles.get(ui, 'Unknown UI')}</div>"
 
-def save_config(zrok_token, ngrok_token, launch_args, tunnel):
+def save_config(zrok_token, launch_args, tunnel):
     config = json.loads(MARK.read_text()) if MARK.exists() else {}
 
     config.update({
         'zrok_token': zrok_token,
-        'ngrok_token': ngrok_token,
         'launch_args': launch_args,
         'tunnel': tunnel,
         'cpu_usage': cpu_cb.value
@@ -93,74 +92,54 @@ def save_config(zrok_token, ngrok_token, launch_args, tunnel):
 def load_css():
     display(HTML(f'<style>{CSS.read_text()}</style>'))
 
-options = ['Pinggy', 'ZROK', 'NGROK']
+# NUEVA INTERFAZ (reemplazando la original)
 title = widgets.HTML()
-zrok_token = widgets.Text(placeholder='Your ZROK Token')
-ngrok_token = widgets.Text(placeholder='Your NGROK Token')
-launch_args = widgets.Text(placeholder='Launch Arguments List', layout=widgets.Layout(top='20px'))
-tunnel = widgets.RadioButtons(
-    options=options,
+zrok_token = widgets.Text(placeholder="ZROK Token", layout=widgets.Layout(width="80%", margin="6px 0"))
+zrok_token.add_class("seg-input-html")
+
+launch_args = widgets.Text(
+    placeholder="Launch Arguments (ej: --xformers --opt-sdp-attention)",
+    layout=widgets.Layout(width="80%", margin="6px 0")
+)
+launch_args.add_class("seg-input-html")
+
+cpu_cb = widgets.Checkbox(value=False, description="Modo CPU", layout=widgets.Layout(margin="12px 0 8px 0"))
+
+# Selector de tunel con ToggleButtons
+tunnel = widgets.ToggleButtons(
+    options=['Pinggy', 'ZROK'],
+    button_style='',
     layout=widgets.Layout(
         display='flex',
-        flex_flow='row',
-        justify_content='space-between'
+        justify_content='center',
+        margin='0 0 15px 0'
     )
 )
 
-top = widgets.HBox(
-    [tunnel, title],
-    layout=widgets.Layout(
-        display='flex',
-        flex_flow='row',
-        justify_content='space-between'
-    )
-)
+tunnel.style = {'button_width': '100px'}
 
-launch_button = widgets.Button(description='Launch')
-exit_button = widgets.Button(description='Exit')
-cpu_cb = widgets.Checkbox(value=False, description='CPU', layout=widgets.Layout(left='10px'))
-button_box = widgets.HBox(
-    [launch_button, cpu_cb, exit_button],
-    layout=widgets.Layout(
-        display='flex',
-        flex_flow='row',
-        align_items='center',
-        justify_content='space-between'
-    )
-)
+def update_tunnel_style(change):
+    if change['new'] in ['Pinggy', 'ZROK']:
+        tunnel.style = {'button_width': '100px', 'colors': {'selected': '#C41564'}}
 
-token_box = widgets.VBox(
-    [zrok_token, ngrok_token, launch_args],
-    layout=widgets.Layout(
-        width='auto',
-        height='auto',
-        flex_flow='column',
-        align_items='center',
-        justify_content='space-between',
-        padding='0'
-    )
-)
+tunnel.observe(update_tunnel_style, 'value')
 
-launch_panel = widgets.Box(
-    [top, token_box, button_box],
-    layout=widgets.Layout(
-        width='700px',
-        height='300px',
-        display='flex',
-        flex_flow='column',
-        justify_content='space-between',
-        padding='20px'
-    )
-)
+# Boton Iniciar
+launch_button = widgets.Button(description="Iniciar", layout=widgets.Layout(height="35px", padding="0 50px"))
+launch_button.add_class("seg-button")
 
-cpu_cb.add_class('cpu-cbx')
-tunnel.add_class('tunnel')
-zrok_token.add_class('zrok')
-ngrok_token.add_class('ngrok')
-launch_args.add_class('text-input')
-launch_button.add_class('buttons')
-exit_button.add_class('buttons')
-launch_panel.add_class('launch-panel')
+# Formulario completo
+form_box = widgets.VBox([
+    title,
+    tunnel,
+    zrok_token,
+    launch_args,
+    cpu_cb,
+    launch_button
+])
+form_box.add_class("seg-box")
+
+launch_panel = form_box
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--skip-comfyui-check', action='store_true', help='Skip checking custom node dependencies for ComfyUI')
@@ -176,11 +155,6 @@ def NGROK_ZROK(T):
             'B': HOME / '.zrok/bin/zrok',
             'C': HOME / '.zrok/environment.json',
             't': zrok_token.value
-        },
-        'ngrok': {
-            'B': HOME / '.ngrok/bin/ngrok',
-            'C': HOME / '.config/ngrok/ngrok.yml',
-            't': ngrok_token.value
         }
     }
 
@@ -191,14 +165,12 @@ def NGROK_ZROK(T):
     if not B.exists():
         print(f'{ERR}: {T.upper()} is not installed'); sys.exit()
 
-    E = f'{T} enable {t}' if T == 'zrok' else f'{T} config add-authtoken {t}'
+    E = f'{T} enable {t}'
 
     if C.exists():
         ct = None
         if T == 'zrok':
             ct = json.loads(C.read_text()).get('zrok_token')
-        elif T == 'ngrok':
-            ct = yaml.safe_load(C.read_text()).get('agent', {}).get('authtoken')
 
         if ct != t:
             if T == 'zrok':
@@ -249,11 +221,6 @@ def launching(ui, skip_comfyui_check=False):
             'name': 'PINGGY',
             'pattern': r'https://[\w-]+\.run\.pinggy-free\.link'
         },
-        'NGROK': {
-            'command': f'ngrok http http://localhost:{port} --log stdout',
-            'name': 'NGROK',
-            'pattern': r'https://[\w-]+\.ngrok-free\.[\w.-]+'
-        },
         'ZROK': {
             'command': f'zrok share public localhost:{port} --headless',
             'name': 'ZROK',
@@ -262,7 +229,7 @@ def launching(ui, skip_comfyui_check=False):
     }
 
     c = f'{PY} Launcher.py {args}'
-    cmd = {key: c for key in ['Pinggy', 'ZROK', 'NGROK']}.get(tunnel_name)
+    cmd = {key: c for key in ['Pinggy', 'ZROK']}.get(tunnel_name)
     configs = tunnel_config.get(tunnel_name)
 
     if cmd and configs:
@@ -270,7 +237,6 @@ def launching(ui, skip_comfyui_check=False):
             from cupang import Tunnel as Alice_Zuberg
 
             if tunnel_name == 'ZROK': NGROK_ZROK('zrok')
-            if tunnel_name == 'NGROK': NGROK_ZROK('ngrok')
 
             Alice_Synthesis_Thirty = Alice_Zuberg(port)
             Alice_Synthesis_Thirty.logger.setLevel(logging.DEBUG)
@@ -294,22 +260,18 @@ def waiting(condition, is_ready):
     launching(ui, skip_comfyui_check=args.skip_comfyui_check)
 
 def launch(b):
-    global ui, zrok_token, ngrok_token, launch_args, tunnel
+    global ui, zrok_token, launch_args, tunnel
     launch_panel.close()
-    save_config(zrok_token.value, ngrok_token.value, launch_args.value, tunnel.value)
+    save_config(zrok_token.value, launch_args.value, tunnel.value)
     with condition:
         is_ready.value = True
         condition.notify()
 
-def exit(b):
-    launch_panel.close()
-
 def display_widgets():
-    load_config()
     load_css()
+    load_config()
     display(launch_panel)
     launch_button.on_click(launch)
-    exit_button.on_click(exit)
 
 if __name__ == '__main__':
     try:
