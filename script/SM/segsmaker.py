@@ -8,7 +8,6 @@ import logging
 import json
 import yaml
 import sys
-import os
 
 HOME = Path.home()
 SRC = HOME / '.gutris1'
@@ -76,7 +75,7 @@ def load_config():
         'SDTrainer': 'SD Trainer'
     }
 
-    title.value = f"<div class='seg-title'>{ui_titles.get(ui, 'Unknown UI')}</div>"
+    title.value = f"<div class='title'><h1>{ui_titles.get(ui, 'Unknown UI')}</h1></div>"
 
 def save_config(zrok_token, ngrok_token, launch_args, tunnel):
     config = json.loads(MARK.read_text()) if MARK.exists() else {}
@@ -92,133 +91,76 @@ def save_config(zrok_token, ngrok_token, launch_args, tunnel):
     MARK.write_text(json.dumps(config, indent=4))
 
 def load_css():
-    # Cargar estilo desde box.py
-    try:
-        os.chdir(os.path.expanduser("~"))
-        download_dir = Path.home() / ".swar" / "Download"
-        if str(download_dir) not in sys.path:
-            sys.path.insert(0, str(download_dir))
-        from box import load_style
-        load_style()
-    except Exception as e:
-        # Si no funciona, usar CSS local
-        css = """
-        .seg-box {
-            background: #1E1F21;
-            border-radius: 12px;
-            padding: 25px;
-            width: 100%;           
-            max-width: 100%;
-            font-family: 'Source Sans Pro', sans-serif;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;    
-            justify-content: center;
-        }
-        .seg-title {
-            color: rgba(255,255,255,0.9);
-            font-size: 27px;        
-            font-weight: 400;       
-            margin-bottom: 12px;
-        }
-        .seg-input-html input {
-            background: #333333;  
-            border: none;
-            border-radius: 12px;
-            padding: 12px 0;
-            width: 80%;
-            margin-bottom: 6px;
-            color: rgba(255,255,255,0.85);
-            font-size: 18px;       
-            text-align: center;
-            transition: none;
-        }
-        .seg-input-html input::placeholder {
-            color: rgba(255,255,255,0.7);
-            text-align: center;
-        }
-        .seg-button {
-            border: 2px solid #C41564;
-            border-radius: 12px;
-            background: #C41564;
-            color: #fff;
-            font-size: 15px;
-            padding: 8px 50px;
-            margin-top: 4px;
-            transition: background 0.3s ease, transform 0.2s ease;
-        }
-        .seg-button:hover {
-            background: #db5a94;
-            transform: translateY(-1px);
-        }
-        """
-        display(HTML(f"<style>{css}</style>"))
+    display(HTML(f'<style>{CSS.read_text()}</style>'))
 
-# ============ NUEVA INTERFAZ ============
+options = ['Pinggy', 'ZROK', 'NGROK']
 title = widgets.HTML()
-zrok_token = widgets.Text(placeholder="ZROK Token", layout=widgets.Layout(width="80%", margin="6px 0"))
-zrok_token.add_class("seg-input-html")
-ngrok_token = widgets.Text(placeholder="NGROK Token", layout=widgets.Layout(width="80%", margin="6px 0"))
-ngrok_token.add_class("seg-input-html")
-launch_args = widgets.Text(
-    placeholder="Launch Arguments (ej: --xformers --opt-sdp-attention)",
-    layout=widgets.Layout(width="80%", margin="6px 0")
-)
-launch_args.add_class("seg-input-html")
-
-cpu_cb = widgets.Checkbox(value=False, description="Modo CPU", layout=widgets.Layout(margin="12px 0 8px 0"))
-
-# Selector de tunel con ToggleButtons
-tunnel = widgets.ToggleButtons(
-    options=['Pinggy', 'ZROK', 'NGROK'],
-    button_style='',
+zrok_token = widgets.Text(placeholder='Your ZROK Token')
+ngrok_token = widgets.Text(placeholder='Your NGROK Token')
+launch_args = widgets.Text(placeholder='Launch Arguments List', layout=widgets.Layout(top='20px'))
+tunnel = widgets.RadioButtons(
+    options=options,
     layout=widgets.Layout(
         display='flex',
-        justify_content='center',
-        margin='0 0 15px 0'
+        flex_flow='row',
+        justify_content='space-between'
     )
 )
 
-tunnel.style = {'button_width': '100px'}
+top = widgets.HBox(
+    [tunnel, title],
+    layout=widgets.Layout(
+        display='flex',
+        flex_flow='row',
+        justify_content='space-between'
+    )
+)
 
-def update_tunnel_style(change):
-    if change['new'] in ['Pinggy', 'ZROK', 'NGROK']:
-        tunnel.style = {'button_width': '100px', 'colors': {'selected': '#C41564'}}
-
-tunnel.observe(update_tunnel_style, 'value')
-
-# Botones
-launch_button = widgets.Button(description="Iniciar", layout=widgets.Layout(height="35px", padding="0 50px"))
-launch_button.add_class("seg-button")
-
-exit_button = widgets.Button(description="Exit", layout=widgets.Layout(height="35px", padding="0 50px"))
-exit_button.add_class("seg-button")
-
+launch_button = widgets.Button(description='Launch')
+exit_button = widgets.Button(description='Exit')
+cpu_cb = widgets.Checkbox(value=False, description='CPU', layout=widgets.Layout(left='10px'))
 button_box = widgets.HBox(
-    [launch_button, exit_button],
+    [launch_button, cpu_cb, exit_button],
     layout=widgets.Layout(
         display='flex',
-        gap='20px',
-        justify_content='center',
-        margin='15px 0 0 0'
+        flex_flow='row',
+        align_items='center',
+        justify_content='space-between'
     )
 )
 
-# Formulario completo
-form_box = widgets.VBox([
-    title,
-    tunnel,
-    zrok_token,
-    ngrok_token,
-    launch_args,
-    cpu_cb,
-    button_box
-])
-form_box.add_class("seg-box")
+token_box = widgets.VBox(
+    [zrok_token, ngrok_token, launch_args],
+    layout=widgets.Layout(
+        width='auto',
+        height='auto',
+        flex_flow='column',
+        align_items='center',
+        justify_content='space-between',
+        padding='0'
+    )
+)
 
-launch_panel = form_box
-# ============ FIN NUEVA INTERFAZ ============
+launch_panel = widgets.Box(
+    [top, token_box, button_box],
+    layout=widgets.Layout(
+        width='700px',
+        height='300px',
+        display='flex',
+        flex_flow='column',
+        justify_content='space-between',
+        padding='20px'
+    )
+)
+
+cpu_cb.add_class('cpu-cbx')
+tunnel.add_class('tunnel')
+zrok_token.add_class('zrok')
+ngrok_token.add_class('ngrok')
+launch_args.add_class('text-input')
+launch_button.add_class('buttons')
+exit_button.add_class('buttons')
+launch_panel.add_class('launch-panel')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--skip-comfyui-check', action='store_true', help='Skip checking custom node dependencies for ComfyUI')
@@ -266,7 +208,7 @@ def NGROK_ZROK(T):
         SyS(E); print()
 
 def launching(ui, skip_comfyui_check=False):
-    args_launch = f'{launch_args.value}'
+    args = f'{launch_args.value}'
     tunnel_name = tunnel.value
 
     get_ipython().run_line_magic('run', 'venv.py')
@@ -274,7 +216,7 @@ def launching(ui, skip_comfyui_check=False):
     if ui in ['A1111', 'Forge', 'ReForge', 'Forge-Classic']:
         port = 7860
         PY = '/tmp/python311/bin/python3' if ui == 'Forge-Classic' else '/tmp/venv/bin/python3'
-        args_launch += ' --enable-insecure-extension-access --disable-console-progressbars --theme dark'
+        args += ' --enable-insecure-extension-access --disable-console-progressbars --theme dark'
 
     elif ui in ['ComfyUI', 'SwarmUI']:
         PY = '/tmp/venv-comfy-swarm/bin/python3'
@@ -295,11 +237,11 @@ def launching(ui, skip_comfyui_check=False):
 
     if cpu_cb.value:
         if ui == 'A1111':
-            args_launch += ' --use-cpu all --precision full --no-half --skip-torch-cuda-test'
+            args += ' --use-cpu all --precision full --no-half --skip-torch-cuda-test'
         elif ui in ['Forge', 'ReForge', 'Forge-Classic']:
-            args_launch += ' --always-cpu --skip-torch-cuda-test'
+            args += ' --always-cpu --skip-torch-cuda-test'
         elif ui == 'ComfyUI':
-            args_launch += ' --cpu'
+            args += ' --cpu'
 
     tunnel_config = {
         'Pinggy': {
@@ -319,7 +261,7 @@ def launching(ui, skip_comfyui_check=False):
         }
     }
 
-    c = f'{PY} Launcher.py {args_launch}'
+    c = f'{PY} Launcher.py {args}'
     cmd = {key: c for key in ['Pinggy', 'ZROK', 'NGROK']}.get(tunnel_name)
     configs = tunnel_config.get(tunnel_name)
 
