@@ -27,8 +27,8 @@ def launch_interface():
     css_url = "https://raw.githubusercontent.com/gutris1/segsmaker/refs/heads/main/script/SM/setup.css"
     display(HTML(f'<link rel="stylesheet" type="text/css" href="{css_url}">'))
 
-    modelos_img = "https://raw.githubusercontent.com/SFcrypt/Segsmaker/main/cover/003219.png"
-    loras_img   = "https://raw.githubusercontent.com/SFcrypt/Segsmaker/main/cover/092918.png"
+    modelos_img = "https://raw.githubusercontent.com/SFcrypt/Segsmaker-x/main/script/preview/092918.png"
+    loras_img   = "https://raw.githubusercontent.com/SFcrypt/Segsmaker-x/main/script/preview/003219.png"
 
     display(HTML(f"""
     <style>
