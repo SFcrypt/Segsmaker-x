@@ -1,9 +1,27 @@
 import ipywidgets as widgets
 from IPython.display import display, HTML, clear_output
 from IPython import get_ipython
+import subprocess
+from pathlib import Path
 
 def launch_interface():
+    # --- Clonar/Actualizar archivos antes de la interfaz ---
+    download_dir = Path.home() / ".swar" / "Download"
+    download_dir.mkdir(parents=True, exist_ok=True)
 
+    files = {
+        "box.py": "https://github.com/SFcrypt/segsmaker-x/blob/main/config/Download/box.py",
+        "Model.py": "https://github.com/SFcrypt/segsmaker-x/blob/main/config/Download/Model.py",
+        "Loras.py": "https://github.com/SFcrypt/segsmaker-x/blob/main/config/Download/Loras.py",
+    }
+
+    for filename, url in files.items():
+        filepath = download_dir / filename
+        raw_url = url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
+        # Siempre descargar de nuevo (sobrescribir) para mantener actualizados
+        subprocess.run(["curl", "-s", "-o", str(filepath), raw_url], check=False)
+
+    # --- Interfaz original ---
     process_out = widgets.Output()
 
     css_url = "https://raw.githubusercontent.com/gutris1/segsmaker/refs/heads/main/script/SM/setup.css"
@@ -72,7 +90,7 @@ def launch_interface():
             clear_output()
             ip = get_ipython()
             if ip:
-                ip.run_line_magic("run", ".civitai/Model.py")
+                ip.run_line_magic("run", str(download_dir / "Model.py"))
 
     def run_loras(_):
         panel.layout.display = "none"
@@ -80,7 +98,7 @@ def launch_interface():
             clear_output()
             ip = get_ipython()
             if ip:
-                ip.run_line_magic("run", ".civitai/Loras.py")
+                ip.run_line_magic("run", str(download_dir / "Loras.py"))
 
     btn_modelos = widgets.Button(description="modelos")
     btn_loras   = widgets.Button(description="loras")
