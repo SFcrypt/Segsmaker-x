@@ -5,7 +5,7 @@ from pathlib import Path
 import sys
 import os
 
-def launch_lora_downloader():
+def launch_model_downloader():
     ipy = get_ipython()
     
     # Cambiar al directorio home sin mostrar salida
@@ -39,9 +39,9 @@ def launch_lora_downloader():
         layout=widgets.Layout(height="35px", padding="0 0px"))
     download_btn.add_class("seg-button")
     
-    def descargar_lora(b):
+    def descargar_modelo(b):
         if ipy:
-            ipy.run_line_magic("cd", "$LORA")
+            ipy.run_line_magic("cd", "$CKPT")
         main_container.children = [output]
         with output:
             clear_output()
@@ -58,10 +58,10 @@ def launch_lora_downloader():
             except:
                 pass
     
-    download_btn.on_click(descargar_lora)
+    download_btn.on_click(descargar_modelo)
     
     form_box = widgets.VBox([
-        widgets.HTML("<div class='seg-title'>Descargar Lora</div>"),
+        widgets.HTML("<div class='seg-title'>Descargar Modelo</div>"),
         link_input,
         nombre_input,
         download_btn])
@@ -71,4 +71,4 @@ def launch_lora_downloader():
     display(main_container)
 
 # ejecutar
-launch_lora_downloader()
+launch_model_downloader()
