@@ -7,7 +7,7 @@ from pathlib import Path
 
 def launch_interface():
     # Actualizar archivos
-    install_dir = Path.home() / ".swar" / "Install"
+    install_dir = Path.home() / ".Maker-x" / "Install"
     install_dir.mkdir(parents=True, exist_ok=True)
 
     files = {
