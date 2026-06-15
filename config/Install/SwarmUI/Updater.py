@@ -35,5 +35,9 @@ def run_update():
     clear_output()
     say("<b>【{red} SwarmUI Instalado{d} 】{red}</b>")
 
+ipy = get_ipython()
+    if ipy:
+        ipy.kernel.do_shutdown(True)
+
 if __name__ == "__main__":
     run_update()
