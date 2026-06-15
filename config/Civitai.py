@@ -6,7 +6,7 @@ from pathlib import Path
 
 def launch_interface():
     # --- Clonar/Actualizar archivos antes de la interfaz ---
-    download_dir = Path.home() / ".swar" / "Download"
+    download_dir = Path.home() / ".Maker-x" / "Download"
     download_dir.mkdir(parents=True, exist_ok=True)
 
     files = {
