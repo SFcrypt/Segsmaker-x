@@ -11,10 +11,9 @@ def launch_interface():
     install_dir.mkdir(parents=True, exist_ok=True)
 
     files = {
-        "Install.py": "https://github.com/SFcrypt/segsmaker-x/blob/main/config/Install/Install.py",
-        "Uninstall.py": "https://github.com/SFcrypt/segsmaker-x/blob/main/config/Install/Uninstall.py",
-        "Updater.py": "https://github.com/SFcrypt/segsmaker-x/blob/main/config/Install/Updater.py",
-    }
+        "Install.py": "https://github.com/SFcrypt/Segsmaker-x/blob/main/config/Install/SwarmUI/Install.py",
+        "Uninstall.py": "https://github.com/SFcrypt/segsmaker-x/blob/main/config/Install/SwarmUI/Uninstall.py",
+        "Updater.py": "https://github.com/SFcrypt/segsmaker-x/blob/main/config/Install/SwarmUI/Updater.py",}
 
     for filename, url in files.items():
         filepath = install_dir / filename
