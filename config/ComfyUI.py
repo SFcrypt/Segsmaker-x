@@ -1,207 +1,124 @@
-R = '\033[31m'
-P = '\033[38;5;135m'
-RST = '\033[0m'
-ERR = f'{P}[{RST}{R}ERROR{RST}{P}]{RST}'
-
-import sys, subprocess
-python_version = subprocess.run(['python', '--version'], capture_output=True, text=True).stdout.split()[1]
-if tuple(map(int, python_version.split('.'))) < (3, 10, 6):
-    print(f'{ERR}: Python version 3.10.6 or higher required, and you are using Python {python_version}')
-    sys.exit()
-
-from pathlib import Path
-import shutil
-import shlex
-import json
+import ipywidgets as widgets
+from IPython.display import display, HTML, clear_output
+from IPython import get_ipython
+import subprocess
 import os
+from pathlib import Path
 
-from nenen88 import pull, say, download, clone, tempe
+def launch_interface():
+    # Actualizar archivos
+    install_dir = Path.home() / ".swar" / "Install"
+    install_dir.mkdir(parents=True, exist_ok=True)
 
-REPO = {
-    'ComfyUI': 'https://github.com/comfyanonymous/ComfyUI'
-}
-
-SyS = get_ipython().system
-CD = os.chdir
-
-HOME = Path.home()
-SRC = HOME / '.gutris1'
-CSS = SRC / 'setup.css'
-IMG = SRC / 'loading.png'
-MRK = SRC / 'marking.py'
-MARKED = SRC / 'marking.json'
-TMP = Path('/tmp')
-
-SRC.mkdir(parents=True, exist_ok=True)
-iRON = os.environ
-
-def SM_Script(WEBUI):
-    return [
-        f'https://github.com/gutris1/segsmaker/raw/main/script/SM/venv.py {WEBUI}',
-        f'https://github.com/gutris1/segsmaker/raw/main/script/SM/Launcher.py {WEBUI}',
-        f'https://github.com/gutris1/segsmaker/raw/main/script/SM/segsmaker.py {WEBUI}'
-    ]
-
-def CN_Script(WEBUI):
-    return [
-        f'https://github.com/gutris1/segsmaker/raw/main/script/controlnet.py {WEBUI}/asd',
-        f'https://github.com/gutris1/segsmaker/raw/main/script/cn15.py {WEBUI}/asd',
-        f'https://github.com/gutris1/segsmaker/raw/main/script/cnxl.py {WEBUI}/asd',
-    ]
-
-def tmp_cleaning(v):
-    for i in TMP.iterdir():
-        if i.is_dir() and i != v:
-            shutil.rmtree(i)
-        elif i.is_file() and i != v:
-            i.unlink()
-
-def marking(p, n, i):
-    t = p / n
-    if not t.exists():
-        t.write_text(json.dumps({
-            'ui': i,
-            'launch_args': '',
-            'zrok_token': '',
-            'ngrok_token': '',
-            'tunnel': ''
-        }, indent=4))
-    d = json.loads(t.read_text())
-    d.update({'ui': i, 'launch_args': ''})
-    t.write_text(json.dumps(d, indent=4))
-
-def install_tunnel():
-    bins = {
-        'zrok': {
-            'bin': HOME / '.zrok/bin/zrok',
-            'url': 'https://github.com/openziti/zrok/releases/download/v1.0.6/zrok_1.0.6_linux_amd64.tar.gz'
-        },
-        'ngrok': {
-            'bin': HOME / '.ngrok/bin/ngrok',
-            'url': 'https://bin.ngrok.com/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz'
-        }
+    files = {
+        "Install.py": "https://github.com/SFcrypt/Segsmaker-x/blob/main/config/Install/ComfyUI/Install.py",
+        "Uninstall.py": "https://github.com/SFcrypt/segsmaker-x/blob/main/config/Install/Uninstall.py",
+        "Updater.py": "https://github.com/SFcrypt/segsmaker-x/blob/main/config/Install/Updater.py",
     }
 
-    for n, b in bins.items():
-        binPath = b['bin']
-        if binPath.exists(): binPath.unlink()
+    for filename, url in files.items():
+        filepath = install_dir / filename
+        raw_url = url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
+        subprocess.run(["curl", "-s", "-o", str(filepath), raw_url], check=False)
 
-        url = b['url']
-        name = Path(url).name
-        binDir = binPath.parent
+    # Interfaz original
+    process_out = widgets.Output()
+    css_url = "https://raw.githubusercontent.com/gutris1/segsmaker/refs/heads/main/script/SM/setup.css"
+    display(HTML(f'<link rel="stylesheet" type="text/css" href="{css_url}">'))
 
-        binDir.mkdir(parents=True, exist_ok=True)
+    instalar_img    = "https://raw.githubusercontent.com/SFcrypt/Segsmaker-x/main/script/preview/003219.png"
+    desinstalar_img = "https://raw.githubusercontent.com/SFcrypt/Segsmaker-x/main/script/preview/092918.png"
 
-        SyS(f'curl -sLo {binDir}/{name} {url}')
-        SyS(f'tar -xzf {binDir}/{name} -C {binDir} --wildcards *{n}')
-        SyS(f'rm -f {binDir}/{name}')
+    display(HTML(f"""
+    <style>
+    .setup-box {{
+        padding: 10px;
+        border-radius: 16px;
+        background: #000000;
+        overflow: hidden;}}
 
-        if str(binDir) not in iRON.get('PATH', ''): iRON['PATH'] += ':' + str(binDir)
-        binPath.chmod(0o755)
+    .custom-btn {{
+        width: 100%;
+        height: 100%;
+        border: 2px solid #111 !important;
+        border-radius: 14px;
+        background-size: cover;
+        background-position: center;
+        color: white !important;
+        font-size: 18px;
+        font-weight: 700;
+        text-transform: lowercase;
+        text-shadow: 0 2px 6px rgba(0,0,0,.95);
+        padding-top: 10px;
+        align-items: flex-start;
+        justify-content: center;
+        box-shadow: inset 0 0 0 1px #222;
+        transition: all .15s ease-in-out;
+        overflow: hidden;}}
 
-def sym_link(U, M):
-    configs = {
-        'ComfyUI': {
-            'sym': [
-                f"rm -rf {M / 'checkpoints/tmp_ckpt'} {M / 'loras/tmp_lora'} {M / 'controlnet'}",
-                f"rm -rf {M / 'clip'} {M / 'clip_vision'} {M / 'diffusers'} {M / 'diffusion_models'}",
-                f"rm -rf {M / 'text_encoders'} {M / 'unet'}"
-            ],
-            'links': [
-                (M / 'checkpoints', M / 'checkpoints_symlink'),
-                (TMP, HOME / 'tmp'),
-                (TMP / 'ckpt', M / 'checkpoints/tmp_ckpt'),
-                (TMP / 'lora', M / 'loras/tmp_lora'),
-                (TMP / 'controlnet', M / 'controlnet'),
-                (TMP / 'clip', M / 'clip'),
-                (TMP / 'clip_vision', M / 'clip_vision'),
-                (TMP / 'diffusers', M / 'diffusers'),
-                (TMP / 'diffusion_models', M / 'diffusion_models'),
-                (TMP / 'text_encoders', M / 'text_encoders'),
-                (TMP / 'unet', M / 'unet')
-            ]
-        }
-    }
+    .custom-btn:hover {{
+        border-color: #00aaff !important;
+        box-shadow: 0 0 0 2px #00aaff;
+        transform: translateY(-2px);}}
 
-    cfg = configs.get(U)
-    SyS(f"rm -rf {HOME / 'tmp'} {HOME / '.cache'}/*")
-    [SyS(f'{cmd}') for cmd in cfg['sym']]
-    [SyS(f'ln -s {src} {tg}') for src, tg in cfg['links']]
+    .instalar {{
+        background-image: url('{instalar_img}');}}
 
-def webui_req(U, W, M):
-    vnv = TMP / 'venv'
-    tmp_cleaning(vnv)
-    CD(W)
+    .desinstalar {{
+        background-image: url('{desinstalar_img}');}}
 
-    pull(f'https://github.com/gutris1/segsmaker {U.lower()} {W}')
-    sym_link(U, M)
+    .widget-button {{
+        min-width: 0 !important;}}
 
-    scripts = SM_Script(W)
-    scripts.extend(CN_Script(W))
+    .widget-box, .output_wrapper, .output {{
+        overflow: hidden !important;
+        max-height: none !important;}}
+    </style>
+    """))
 
-    u = M / 'upscale_models'
-    upscalers = [
-        f'https://huggingface.co/gutris1/webui/resolve/main/misc/4x-UltraSharp.pth {u}',
-        f'https://huggingface.co/gutris1/webui/resolve/main/misc/4x-AnimeSharp.pth {u}',
-        f'https://huggingface.co/gutris1/webui/resolve/main/misc/4x_NMKD-Superscale-SP_178000_G.pth {u}',
-        f'https://huggingface.co/uwg/upscaler/resolve/main/ESRGAN/8x_NMKD-Superscale_150000_G.pth {u}',
-        f'https://huggingface.co/gutris1/webui/resolve/main/misc/4x_RealisticRescaler_100000_G.pth {u}',
-        f'https://huggingface.co/gutris1/webui/resolve/main/misc/8x_RealESRGAN.pth {u}',
-        f'https://huggingface.co/gutris1/webui/resolve/main/misc/4x_foolhardy_Remacri.pth {u}',
-        f'https://huggingface.co/subby2006/NMKD-YandereNeoXL/resolve/main/4x_NMKD-YandereNeoXL_200k.pth {u}',
-        f'https://huggingface.co/subby2006/NMKD-UltraYandere/resolve/main/4x_NMKD-UltraYandere_300k.pth {u}'
-    ]
+    def run_instalar(_):
+        panel.layout.display = "none"
+        with process_out:
+            clear_output()
+            ip = get_ipython()
+            if ip:
+                ip.run_line_magic("run", str(install_dir / "Install.py"))
+                ip.run_line_magic("run", str(install_dir / "Updater.py"))
 
-    line = scripts + upscalers
-    for item in line: download(item)
+    def run_desinstalar(_):
+        panel.layout.display = "none"
+        with process_out:
+            clear_output()
+            ip = get_ipython()
+            if ip:
+                ip.run_line_magic("run", str(install_dir / "Uninstall.py"))
 
-def WebUIExtensions(U, W, M):
-    EXT = W / 'custom_nodes'
-    CD(EXT)
+    btn_instalar = widgets.Button(description="instalar")
+    btn_desinstalar = widgets.Button(description="desinstalar")
 
-    say('<br><b>【{red} Installing Custom Nodes{d} 】{red}</b>')
-    clone(str(W / 'asd/custom_nodes.txt'))
-    print()
+    for btn, clase in [
+        (btn_instalar, "instalar"),
+        (btn_desinstalar, "desinstalar")]:
+        btn.add_class("custom-btn")
+        btn.add_class(clase)
 
-    for faces in [
-        f'https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth {M}/facerestore_models',
-        f'https://github.com/TencentARC/GFPGAN/releases/download/v1.3.4/GFPGANv1.4.pth {M}/facerestore_models'
-    ]: download(faces)
+    btn_instalar.on_click(run_instalar)
+    btn_desinstalar.on_click(run_desinstalar)
 
-def installing_webui(U, W):
-    M = W / 'models'
-    E = M / 'embeddings'
-    V = M / 'vae'
+    row = widgets.HBox(
+        [btn_instalar, btn_desinstalar],
+        layout=widgets.Layout(
+            width="100%",
+            height="240px",
+            gap="10px"))
 
-    webui_req(U, W, M)
-    install_tunnel()
+    global panel
+    panel = widgets.VBox(
+        [row],
+        layout=widgets.Layout(width="100%"))
 
-    extras = [
-        f'https://huggingface.co/gutris1/webui/resolve/main/misc/embeddingsXL.zip {W}',
-        f'https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl.vae.safetensors {V} sdxl_vae.safetensors'
-    ]
+    panel.add_class("setup-box")
 
-    for i in extras: download(i)
-    SyS(f"unzip -qo {W / 'embeddingsXL.zip'} -d {E} && rm {W / 'embeddingsXL.zip'}")
-    WebUIExtensions(U, W, M)
+    display(panel, process_out)
 
-def webui_install(ui):
-    WEBUI = HOME / ui
-    repo = REPO[ui]
-
-    say(f"<b>【{{red}} Installing {ui.replace('-', '')}{{d}} 】{{red}}</b>")
-    clone(repo)
-
-    marking(SRC, MARKED, ui)
-    installing_webui(ui, WEBUI)
-    tempe()
-
-    get_ipython().run_line_magic('run', str(MRK))
-    get_ipython().run_line_magic('run', str(WEBUI / 'venv.py'))
-
-    say('<b>【{red} Done{d} 】{red}</b>')
-    CD(HOME)
-
-# Instalación automática de ComfyUI
-CD(HOME)
-webui_install('ComfyUI')
+launch_interface()
