@@ -12,8 +12,8 @@ def launch_interface():
 
     files = {
         "Install.py": "https://github.com/SFcrypt/Segsmaker-x/blob/main/config/Install/ComfyUI/Install.py",
-        "Uninstall.py": "https://github.com/SFcrypt/segsmaker-x/blob/main/config/Install/Uninstall.py",
-        "Updater.py": "https://github.com/SFcrypt/segsmaker-x/blob/main/config/Install/Updater.py",
+        "Uninstall.py": "https://github.com/SFcrypt/segsmaker-x/blob/main/config/Install/ComfyUI/Uninstall.py",
+        "Updater.py": "https://github.com/SFcrypt/segsmaker-x/blob/main/config/Install/ComfyUI/Updater.py",
     }
 
     for filename, url in files.items():
