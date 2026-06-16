@@ -30,7 +30,7 @@ def launch_lora_downloader():
     link_input.add_class("seg-input-html")
     
     nombre_input = widgets.Text(
-        placeholder="Nombre del archivo",
+        placeholder="Nombre del archivo (opcional)",
         layout=widgets.Layout(width="80%", margin="0 0 6px 0"))
     nombre_input.add_class("seg-input-html")
     
@@ -46,15 +46,24 @@ def launch_lora_downloader():
         with output:
             clear_output()
             Link = link_input.value.strip()
-            Nombre = "-".join(nombre_input.value.strip().split())
-            if not Link or not Nombre:
+            Nombre = nombre_input.value.strip()
+            
+            if not Link:
                 return
+            
             try:
                 if ipy:
-                    ipy.run_line_magic(
-                        "download",
-                        f"{Link} {Nombre}.safetensors"
-                    )
+                    if Nombre:
+                        nombre_limpio = "-".join(Nombre.split())
+                        ipy.run_line_magic(
+                            "download",
+                            f"{Link} {nombre_limpio}.safetensors"
+                        )
+                    else:
+                        ipy.run_line_magic(
+                            "download",
+                            f"{Link}"
+                        )
             except:
                 pass
     
