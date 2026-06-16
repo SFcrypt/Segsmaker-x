@@ -2,82 +2,61 @@ import ipywidgets as widgets
 from IPython.display import display, clear_output
 from IPython import get_ipython
 from pathlib import Path
-import sys
-import os
+import sys, os
 
 def launch_lora_downloader():
     ipy = get_ipython()
-    
-    # Cambiar al directorio home sin mostrar salida
     os.chdir(os.path.expanduser("~"))
     
-    # Agregar la ruta donde ya están los archivos descargados
     download_dir = Path.home() / ".swar" / "Download"
     if str(download_dir) not in sys.path:
         sys.path.insert(0, str(download_dir))
     
-    # Importar box.py desde la ubicación actualizada
     from box import load_style
-    
     load_style()
     
-    main_container = widgets.VBox()
+    link = widgets.Text(placeholder="Link de descarga", layout=widgets.Layout(width="80%", margin="0 0 6px 0"))
+    link.add_class("seg-input-html")
+    
+    nombre = widgets.Text(placeholder="Nombre (opcional)", layout=widgets.Layout(width="80%", margin="0 0 6px 0"))
+    nombre.add_class("seg-input-html")
+    
+    btn = widgets.Button(description="Download", layout=widgets.Layout(height="35px"))
+    btn.add_class("seg-button")
+    
     output = widgets.Output()
     
-    link_input = widgets.Text(
-        placeholder="Link de descarga",
-        layout=widgets.Layout(width="80%", margin="0 0 6px 0"))
-    link_input.add_class("seg-input-html")
-    
-    nombre_input = widgets.Text(
-        placeholder="Nombre del archivo (opcional)",
-        layout=widgets.Layout(width="80%", margin="0 0 6px 0"))
-    nombre_input.add_class("seg-input-html")
-    
-    download_btn = widgets.Button(
-        description="Download",
-        layout=widgets.Layout(height="35px", padding="0 0px"))
-    download_btn.add_class("seg-button")
-    
-    def descargar_lora(b):
+    def descargar(b):
         if ipy:
             ipy.run_line_magic("cd", "$LORA")
-        main_container.children = [output]
+        
         with output:
             clear_output()
-            Link = link_input.value.strip()
-            Nombre = nombre_input.value.strip()
+            url = link.value.strip()
+            name = nombre.value.strip()
             
-            if not Link:
+            if not url:
                 return
             
             try:
                 if ipy:
-                    if Nombre:
-                        nombre_limpio = "-".join(Nombre.split())
-                        ipy.run_line_magic(
-                            "download",
-                            f"{Link} {nombre_limpio}.safetensors"
-                        )
+                    if name:
+                        clean_name = "-".join(name.split())
+                        ipy.run_line_magic("download", f"{url} {clean_name}.safetensors")
                     else:
-                        ipy.run_line_magic(
-                            "download",
-                            f"{Link}"
-                        )
+                        ipy.run_line_magic("download", url)
             except:
                 pass
     
-    download_btn.on_click(descargar_lora)
+    btn.on_click(descargar)
     
-    form_box = widgets.VBox([
+    box = widgets.VBox([
         widgets.HTML("<div class='seg-title'>Descargar Lora</div>"),
-        link_input,
-        nombre_input,
-        download_btn])
-    form_box.add_class("seg-box")
+        link, nombre, btn
+    ])
+    box.add_class("seg-box")
     
-    main_container.children = [form_box]
-    display(main_container)
+    container = widgets.VBox([box])
+    display(container)
 
-# ejecutar
 launch_lora_downloader()
