@@ -46,20 +46,18 @@ def launch_lora_downloader():
                         nombre_limpio = "-".join(Nombre.split())
                         ipy.run_line_magic(
                             "download",
-                            f"{Link} {nombre_limpio}.safetensors"
-                        )
+                            f"{Link} {nombre_limpio}.safetensors")
                     else:
                         ipy.run_line_magic(
                             "download",
-                            f"{Link}"
-                        )
+                            f"{Link}")
             except:
                 pass
     
     download_btn.on_click(descargar_lora)
     
     form_box = widgets.VBox([
-        widgets.HTML("<div class='seg-title'>Descargar Lora</div>"),
+        widgets.HTML("<div class='seg-title'>Descargar Modelo</div>"),
         link_input,
         nombre_input,
         download_btn])
