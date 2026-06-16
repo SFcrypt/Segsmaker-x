@@ -21,7 +21,7 @@ def launch_lora_downloader():
     nombre = widgets.Text(placeholder="Nombre (opcional)", layout=widgets.Layout(width="80%", margin="0 0 6px 0"))
     nombre.add_class("seg-input-html")
     
-    btn = widgets.Button(description="Download", layout=widgets.Layout(height="35px"))
+    btn = widgets.Button(description="Download", layout=widgets.Layout(height="35px", padding="0 0px"))
     btn.add_class("seg-button")
     
     output = widgets.Output()
@@ -48,15 +48,13 @@ def launch_lora_downloader():
             except:
                 pass
     
-    btn.on_click(descargar)
+    btn.on_click(descargar)  
     
     box = widgets.VBox([
         widgets.HTML("<div class='seg-title'>Descargar Lora</div>"),
-        link, nombre, btn
-    ])
+        link, nombre, btn])
     box.add_class("seg-box")
     
     container = widgets.VBox([box])
     display(container)
-
 launch_lora_downloader()
