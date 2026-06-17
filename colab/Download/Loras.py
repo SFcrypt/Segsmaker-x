@@ -20,7 +20,7 @@ def launch_lora_downloader():
     link_input.add_class("seg-input-html")
 
     nombre_input = widgets.Text(
-        placeholder="Nombre del archivo",
+        placeholder="Nombre (opcional)",
         layout=widgets.Layout(width="80%", margin="0 0 6px 0"))
     nombre_input.add_class("seg-input-html")
 
