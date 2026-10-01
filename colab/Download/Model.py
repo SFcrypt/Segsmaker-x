@@ -41,7 +41,7 @@ def launch_lora_downloader():
         try:
             if ipy:
                 if nombre:
-                    nombre_limpio = "-".join(nombre.split())
+                    nombre_limpio = nombre.capitalize().replace(" ", "-")
                     ipy.run_line_magic(
                         "download",
                         f"{link} {nombre_limpio}.safetensors"
