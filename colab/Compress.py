@@ -19,7 +19,7 @@ def launch_image_compressor():
         nombre = nombre_input.value.strip()
         if not nombre:
             return
-        nombre = " ".join(nombre.capitalize().split())
+        nombre = nombre.capitalize().replace(" ", "-")
         if nombre.lower().endswith(".zip"):
             nombre = nombre[:-4]
         if not nombre or nombre in (".", ".."):
@@ -51,6 +51,9 @@ def launch_image_compressor():
                 <span style="color:#00e6a0;">●</span>
                 <span style="color:#ff6600;">/</span><span>content</span><span style="color:#ff8733;">/</span><span>zip</span><span style="color:#ff8733;">/</span><span>{escape(os.path.basename(zip_path))}</span>
                 </div>"""))
+
+                from google.colab import files
+                files.download(zip_path)
             else:
                 print("Error al crear el ZIP.")
         except Exception as e:
