@@ -49,7 +49,7 @@ def launch_image_compressor():
                 display(HTML(f"""
                 <div style="font-family:monospace;font-size:14px;padding:8px 0;overflow-wrap:anywhere;color:#d1d1d1;">
                 <span style="color:#00e6a0;">●</span>
-                <span style="color:#ff8733;">/</span><span>content</span><span style="color:#ff8733;">/</span><span>zip</span><span style="color:#ff8733;">/</span><span>{escape(os.path.basename(zip_path))}</span>
+                <span style="color:#ff6600;">/</span><span>content</span><span style="color:#ff8733;">/</span><span>zip</span><span style="color:#ff8733;">/</span><span>{escape(os.path.basename(zip_path))}</span>
                 </div>"""))
             else:
                 print("Error al crear el ZIP.")
