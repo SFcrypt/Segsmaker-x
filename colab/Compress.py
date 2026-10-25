@@ -58,7 +58,7 @@ def launch_image_compressor():
 
     crear_btn.on_click(crear_zip)
     form_box = widgets.VBox([
-        widgets.HTML("<div class='seg-title'>Comprimir</div>"),
+        widgets.HTML("<div class='seg-title'>Comprimir output</div>"),
         nombre_input, crear_btn
     ])
     form_box.add_class("seg-box")
