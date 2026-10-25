@@ -10,7 +10,7 @@ def launch_image_compressor():
     os.makedirs(destino, exist_ok=True)
     load_style()
 
-    nombre_input = widgets.Text(placeholder="Nombre (zip)", layout=widgets.Layout(width="80%", margin="0 0 6px 0"))
+    nombre_input = widgets.Text(placeholder="Nombre (archivo)", layout=widgets.Layout(width="80%", margin="0 0 6px 0"))
     nombre_input.add_class("seg-input-html")
     crear_btn = widgets.Button(description="comprimir", layout=widgets.Layout(height="35px", padding="0 0px"))
     crear_btn.add_class("seg-button")
@@ -58,7 +58,7 @@ def launch_image_compressor():
 
     crear_btn.on_click(crear_zip)
     form_box = widgets.VBox([
-        widgets.HTML("<div class='seg-title'>Comprimir Imágenes</div>"),
+        widgets.HTML("<div class='seg-title'>Comprimir</div>"),
         nombre_input, crear_btn
     ])
     form_box.add_class("seg-box")
