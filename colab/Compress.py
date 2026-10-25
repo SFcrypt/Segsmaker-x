@@ -19,7 +19,7 @@ def launch_image_compressor():
         nombre = nombre_input.value.strip()
         if not nombre:
             return
-        nombre = nombre.capitalize().replace(" ", "-")
+        nombre = " ".join(nombre.capitalize().split())
         if nombre.lower().endswith(".zip"):
             nombre = nombre[:-4]
         if not nombre or nombre in (".", ".."):
@@ -36,7 +36,7 @@ def launch_image_compressor():
         base = os.path.join(destino, nombre)
         zip_path, n = base + ".zip", 2
         while os.path.exists(zip_path):
-            zip_path, n = f"{base}({n}).zip", n + 1
+            zip_path, n = f"{base}-{n}.zip", n + 1
 
         clear_output(wait=True)
         try:
@@ -47,7 +47,7 @@ def launch_image_compressor():
                     shutil.rmtree(ruta) if os.path.isdir(ruta) and not os.path.islink(ruta) else os.remove(ruta)
 
                 display(HTML(f"""
-                <div style="font-family:monospace;font-size:14px;padding:8px 0;overflow-wrap:anywhere;color:#d1d1d1;">
+                <div style="font-family:monospace;font-size:14px;padding:8px 0;overflow-wrap:anywhere;color:#ffffff;">
                 <span style="color:#00e6a0;">●</span>
                 <span style="color:#ff6600;">/</span><span>content</span><span style="color:#ff8733;">/</span><span>zip</span><span style="color:#ff8733;">/</span><span>{escape(os.path.basename(zip_path))}</span>
                 </div>"""))
